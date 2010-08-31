@@ -4,12 +4,10 @@
  * this class generates an AX.25 compliant UI Frame incl. bit stuffing.
  * 
  * 08/29/2010
- * Bastian Müller
+ * Bastian Mueller
  * 
  */
 package com.nogy.afu.soundmodem;
-
-import android.test.IsolatedContext;
 
 public class APRSFrame {
 	private String srca; // Source Address
@@ -18,6 +16,7 @@ public class APRSFrame {
 	private byte cf; // controll field
 	private byte protoId;
 	private String data;
+	@SuppressWarnings("unused")
 	private byte flag;
 	private int framelength;
 	
@@ -61,7 +60,6 @@ public class APRSFrame {
 //		bits =0; 
 //		bytes =0;
 		ones = 0;
-		int temp = 0;
 		for (i=0; i<out.length; i++)
 			out[i] = 0;
 		for (i=0; i<framelength; i++)

@@ -4,7 +4,7 @@
  * This class helps sending out AFSK modulated data packets for e.g. hamradio use
  * 
  * 08/27/2010
- * Bastian Müller
+ * Bastian Mueller
  * 
  */
 

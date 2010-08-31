@@ -3,7 +3,7 @@
  * Contains a bit stuffed AX.25 UI Frame
  * 
  * 08/29/2010
- * Bastian Müller
+ * Bastian Mueller
  * 
  */
 
