@@ -1,0 +1,19 @@
+Welcome to jsoundmodem,
+
+this project was set up to enable APRSDroid to communicate via transceivers.
+Therefore it is still very limited right now.
+
+Working features:
+	- Afsk modulator
+	- APRSFrame packet builder
+	- generic Message class to store not byte-aligned messages and their
+	  length in bits. (Being unaligned is a painful property of messages
+	  after being bit stuffed
+
+Next to come:
+	- I'm thinking of an Afsk demodulator
+	- Extending the APRSFrame packet builder to a generic APRS packet
+	  handler
+
+Bastian Müller
+08/31/2010
