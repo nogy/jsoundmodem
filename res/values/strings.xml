@@ -2,4 +2,6 @@
 <resources>
     <string name="hello">Hello World, soundmodem!</string>
     <string name="app_name">jsoundmodem</string>
+<string name="permlab_Audio">Needed to record audio</string>
+<string name="permdesc_Audio">Needed to record audio</string>
 </resources>

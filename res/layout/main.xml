@@ -8,8 +8,9 @@
     android:layout_width="fill_parent" 
     android:layout_height="wrap_content" 
     android:text="@string/hello"
-    />
+    android:id="@+id/Status" android:enabled="true"/>
 
 
 <Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TX" android:id="@+id/B_TX" android:onClick="do_TX"></Button>
+<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RX" android:id="@+id/B_RX" android:onClick="do_RX"></Button>
 </LinearLayout>

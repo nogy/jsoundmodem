@@ -10,26 +10,124 @@
 
 package com.nogy.afu.soundmodem;
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.ConsoleHandler;
+
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.provider.MediaStore.Audio.AudioColumns;
+import android.test.IsolatedContext;
+import android.widget.TextView;
+import android.os.Handler;
 
-public class Afsk {
+public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
+{
 	public static int f_low = 1200;
 	public static int f_high = 2200;
 	public static int bps = 1200;
-	public static int samplerate = 12000;
+	public static int samplerate = 10560;
 	public static int pcmBits = 16;
 	
 	public short[] pcmData;
+	public short[] recordData;
 	
 	private AudioTrack a;
+	private	AudioRecord ar;
 
 	private float volume;
+	public short max;
+	
+	private Thread postProcessor;
+	private Runnable postProcess;
+	
+	private int pos;
+	private boolean run;
+	
+	public TextView debug;
+	
+	private Handler uiHandler;
+	private Runnable updateTextView;
 	
 	public Afsk()
 	{
-		volume = AudioTrack.getMaxVolume()/2;		
+		run = true;
+		uiHandler = new Handler();
+		debug = null;
+		volume = AudioTrack.getMaxVolume()/2;	
+		max = 0;
+		
+		updateTextView = new Runnable() {
+			
+			@Override
+			public void run() {
+				debug.setText("sps:"+ Integer.toString(pos)+"/"+Integer.toString(recordData.length)+ " - max: "+Integer.toString(max));
+				debug.invalidate();
+			}
+		};
+				
+		postProcess = new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+				while (run)
+				{
+					if (ar != null)
+					{
+						if (ar.getState()==AudioRecord.STATE_INITIALIZED)
+							if (ar.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING)
+							{
+								if (max<Short.MAX_VALUE)
+									max++;
+								else
+									max = Short.MIN_VALUE;
+								
+								/*int read = ar.read(recordData, 0, recordData.length);
+								int i=0;
+								pos = read;
+								max = 0;
+								for (i=0; i<read; i++)
+									if (Math.abs(recordData[i])>max)
+										max = recordData[i];
+								*/
+								uiHandler.postAtFrontOfQueue(updateTextView);
+							}
+					try {
+						Thread.sleep(5);
+					} catch (Exception e) {
+						// TODO: handle exception
+					}
+					} else
+						try {
+							Thread.sleep(100);
+						} catch (Exception e) {
+							// TODO: handle exception
+						}
+				}
+			}
+		};
+
+		postProcessor = new Thread(postProcess);
+//		postProcessor.setPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+		postProcessor.setDaemon(true);
+		postProcessor.start();
+	}
+	
+	//
+	public void release()
+	{
+		run = false;
+		try {
+			postProcessor.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void setVolume(float vol)	
@@ -48,7 +146,6 @@ public class Afsk {
 		for (i=0; i<m.numberOfBits; i++)
 		{
 			
-			
 				t=0;
 				if ((m.data[i/8] & (1<<(i%8)))==0) // bit to transmit is 0
 				{
@@ -64,11 +161,10 @@ public class Afsk {
 				}
 			
 		}
-		sendPCM();
-		
+		sendPCM();		
 	}
 	
-	private void sendPCM()
+	public void sendPCM()
 	{
 		a = new AudioTrack(
 				AudioManager.STREAM_MUSIC,
@@ -84,7 +180,48 @@ public class Afsk {
 		a.play();
 		//a.g
 		
-	}	
+	}
 	
+	public void readPCM()
+	{
+		if (ar != null)
+		{
+			if (ar.getRecordingState() == (AudioRecord.RECORDSTATE_RECORDING))
+				ar.stop();
+			ar.release();
+		}
+		else
+		{
+			//android.Manifest.permission.RECORD_AUDIO;
+			int encoding = AudioFormat.ENCODING_PCM_16BIT;
+			int format = AudioFormat.CHANNEL_CONFIGURATION_MONO;
+			int bs = (AudioRecord.getMinBufferSize(samplerate, format, encoding));
+			
+			recordData = new short[bs];
+			
+			//android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+			ar = new AudioRecord(
+						MediaRecorder.AudioSource.MIC,
+						samplerate,
+						format,
+						encoding,
+						bs);
+			ar.setRecordPositionUpdateListener(this);
+			ar.setPositionNotificationPeriod(10);
+			
+			ar.startRecording();
+		}
+	}
+
+	@Override
+	public void onMarkerReached(AudioRecord recorder) {
+		// TODO Auto-generated method stub
+		// UNUSED
+	}
+
+	@Override
+	public void onPeriodicNotification(AudioRecord recorder) {
+		// TODO Auto-generated method stub
+	}
 
 }
