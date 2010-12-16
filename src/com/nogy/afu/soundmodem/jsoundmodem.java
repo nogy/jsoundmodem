@@ -19,7 +19,9 @@ public class jsoundmodem extends Activity {
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        a = new Afsk();
+
+
+a = new Afsk();
     }
     
     public void do_TX(View v)

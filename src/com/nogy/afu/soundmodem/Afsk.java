@@ -29,7 +29,7 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 	public static int f_low = 1200;
 	public static int f_high = 2200;
 	public static int bps = 1200;
-	public static int samplerate = 10560;
+	public static int samplerate = 8000;
 	public static int pcmBits = 16;
 	
 	public short[] pcmData;
@@ -75,39 +75,30 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 			public void run() {
 				// TODO Auto-generated method stub
 				android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+				int i=0;
+				int read = 0;
+				int k=0;
+				long time = 0;
 				while (run)
 				{
-					if (ar != null)
-					{
-						if (ar.getState()==AudioRecord.STATE_INITIALIZED)
-							if (ar.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING)
-							{
-								if (max<Short.MAX_VALUE)
-									max++;
-								else
-									max = Short.MIN_VALUE;
-								
-								/*int read = ar.read(recordData, 0, recordData.length);
-								int i=0;
-								pos = read;
-								max = 0;
-								for (i=0; i<read; i++)
-									if (Math.abs(recordData[i])>max)
-										max = recordData[i];
-								*/
-								uiHandler.postAtFrontOfQueue(updateTextView);
-							}
-					try {
-						Thread.sleep(5);
-					} catch (Exception e) {
-						// TODO: handle exception
+					/*if (max<Short.MAX_VALUE)
+						max++;
+					else
+						max = Short.MIN_VALUE;
+					*/
+					time = android.os.SystemClock.elapsedRealtime();
+					read = ar.read(recordData, 0, 2048);
+					pos = read;
+					max = 0;
+					for (i=0; i<read; i++)
+						if ((recordData[i]>max)||(recordData[i] < -1*max))
+							max = recordData[i];
+					time = android.os.SystemClock.elapsedRealtime()-time;
+					if (time < 30)
+					{					
+						uiHandler.postAtFrontOfQueue(updateTextView);
+						android.os.SystemClock.sleep(10);	
 					}
-					} else
-						try {
-							Thread.sleep(100);
-						} catch (Exception e) {
-							// TODO: handle exception
-						}
 				}
 			}
 		};
@@ -115,7 +106,6 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 		postProcessor = new Thread(postProcess);
 //		postProcessor.setPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 		postProcessor.setDaemon(true);
-		postProcessor.start();
 	}
 	
 	//
@@ -186,6 +176,12 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 	{
 		if (ar != null)
 		{
+			run = false;
+			try {
+				postProcessor.join();
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 			if (ar.getRecordingState() == (AudioRecord.RECORDSTATE_RECORDING))
 				ar.stop();
 			ar.release();
@@ -210,6 +206,18 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 			ar.setPositionNotificationPeriod(10);
 			
 			ar.startRecording();
+			run = true;
+			postProcessor.start();
+			long time;
+			/*while (run)
+			{
+				time = android.os.SystemClock.elapsedRealtime();
+				pos = ar.read(recordData, 0, 4096);
+				time = android.os.SystemClock.elapsedRealtime()-time;
+				//uiHandler.post(updateTextView);
+				android.os.SystemClock.sleep(1);
+			}
+			*/
 		}
 	}
 
