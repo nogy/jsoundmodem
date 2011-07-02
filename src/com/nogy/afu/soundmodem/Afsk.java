@@ -157,7 +157,7 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 	public void sendPCM()
 	{
 		a = new AudioTrack(
-				AudioManager.STREAM_MUSIC,
+				AudioManager.STREAM_RING,
 				samplerate,
 				AudioFormat.CHANNEL_CONFIGURATION_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
