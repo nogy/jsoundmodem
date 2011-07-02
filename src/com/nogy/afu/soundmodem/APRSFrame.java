@@ -178,7 +178,7 @@ public class APRSFrame {
 			temp = parseCall(digis[k],false);
 			while(i<21+k*7)	
 			{
-				out[i] = temp[i-14];
+				out[i] = temp[i-(14+k*7)];
 				i++;
 			}
 		}
