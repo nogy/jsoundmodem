@@ -158,38 +158,28 @@ public class APRSFrame {
 	public Message getMessage()
 	{
 		String[] digis = this.digia.split(",");
-		byte[] out = new byte[14+digis.length*7+2+this.data.length()+2];
+		byte[] databytes = data.getBytes();
+		byte[] out = new byte[14+digis.length*7+2+databytes.length+2];
 		byte[] temp;
 		int k,i=0;
 		temp = parseCall(this.desta, true);
-		while(i<7)		// Fill in source
-		{
-			out[i] = temp[i];
-			i++;
-		}
+		System.arraycopy(temp, 0, out, i, 7);
+		i += 7;
 		temp = parseCall(this.srca, false);
-		while(i<14)		// Fill in dest
-		{
-			out[i] = temp[i-7];
-			i++;
-		}
+		System.arraycopy(temp, 0, out, i, 7);
+		i += 7;
 		for (k=0; k<digis.length; k++)	// Parse an fill in Digis
 		{
 			temp = parseCall(digis[k],false);
-			while(i<21+k*7)	
-			{
-				out[i] = temp[i-(14+k*7)];
-				i++;
-			}
+			System.arraycopy(temp, 0, out, i, 7);
+			i += 7;
 		}
 		out[i-1] |= 0x01;
 		out[i++] = this.cf;
 		out[i++] = this.protoId;
 		k=0;
-		while (k<this.data.length())
-		{
-			out[i++] = (byte)(((int)(data.charAt(k++))) -256);
-		}
+		System.arraycopy(databytes, 0, out, i, databytes.length);
+		i += databytes.length;
 		temp = crc16(out);
 		out[i++] = temp[0];
 		out[i] = temp[1];
