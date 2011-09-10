@@ -29,10 +29,9 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 	public static int f_low = 1200;
 	public static int f_high = 2200;
 	public static int bps = 1200;
-	public static int samplerate = 8000;
+	public static int samplerate = 22050;
 	public static int pcmBits = 16;
 	
-	public short[] pcmData;
 	public short[] recordData;
 	
 	private AudioTrack a;
@@ -132,7 +131,7 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 		int datapoint=0;
 		double cospos=0;
 		int lasttone=f_low;
-		pcmData = new short[(m.numberOfBits*samplerate)/bps];
+		short[] pcmData = new short[(m.numberOfBits*samplerate)/bps];
 		for (i=0; i<m.numberOfBits; i++)
 		{
 			
@@ -151,10 +150,10 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 				}
 			
 		}
-		sendPCM();		
+		sendPCM(pcmData);
 	}
 	
-	public void sendPCM()
+	public void sendPCM(short[] pcmData)
 	{
 		a = new AudioTrack(
 				AudioManager.STREAM_RING,
