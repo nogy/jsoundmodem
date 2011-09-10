@@ -163,7 +163,6 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 				pcmData.length*2,
 				AudioTrack.MODE_STATIC
 				);
-		a.setPlaybackRate(samplerate);
 		a.write(pcmData, 0, pcmData.length);
 		a.setStereoVolume(this.volume, this.volume);
 		a.play();
