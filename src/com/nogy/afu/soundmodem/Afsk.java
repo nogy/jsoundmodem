@@ -35,6 +35,7 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 	public short[] recordData;
 	
 	private AudioTrack a;
+	private boolean isPlaying;
 	private	AudioRecord ar;
 
 	private float volume;
@@ -126,6 +127,10 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 	
 	public void sendMessage(Message m)
 	{
+		// stop playback if not finished with last one
+		if (isPlaying)
+			return;
+
 		int i,k=0;
 		int t=0;
 		int datapoint=0;
@@ -161,12 +166,13 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 				AudioFormat.CHANNEL_CONFIGURATION_MONO,
 				AudioFormat.ENCODING_PCM_16BIT,
 				pcmData.length*2,
-				AudioTrack.MODE_STATIC
+				AudioTrack.MODE_STREAM
 				);
 		a.write(pcmData, 0, pcmData.length);
 		a.setStereoVolume(this.volume, this.volume);
 		isPlaying = true;
 		// implement self-destruction
+		a.setNotificationMarkerPosition(pcmData.length);
 		a.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
 			public void onMarkerReached(AudioTrack track) {
 				track.release();
@@ -175,8 +181,7 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 			public void onPeriodicNotification(AudioTrack track) {
 				// no-op
 			}
-		});
-		a.setNotificationMarkerPosition(pcmData.length);
+		}, uiHandler);
 		a.play();
 	}
 	
