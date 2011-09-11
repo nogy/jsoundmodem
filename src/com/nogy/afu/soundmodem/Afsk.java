@@ -165,9 +165,19 @@ public class Afsk implements AudioRecord.OnRecordPositionUpdateListener
 				);
 		a.write(pcmData, 0, pcmData.length);
 		a.setStereoVolume(this.volume, this.volume);
+		isPlaying = true;
+		// implement self-destruction
+		a.setPlaybackPositionUpdateListener(new AudioTrack.OnPlaybackPositionUpdateListener() {
+			public void onMarkerReached(AudioTrack track) {
+				track.release();
+				isPlaying = false;
+			}
+			public void onPeriodicNotification(AudioTrack track) {
+				// no-op
+			}
+		});
+		a.setNotificationMarkerPosition(pcmData.length);
 		a.play();
-		//a.g
-		
 	}
 	
 	public void readPCM()
